@@ -7,7 +7,7 @@ Because you may want to remove noisy audio, rescale to 1080p your dvr video in o
 
 ```
 ffmpeg -f lavfi -i anullsrc -i DVR_VIDEO _FILE.mov \
-	-pix_fmt yuv420p -shortest -c:v libx264 \
+	-pix_fmt yuv420p -shortest -c:v libx264 -b:v 8M \
 	-vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1" \
 	-c:a aac -map 0:a -map 1:v \
 	VIDEO_FILE_upscaled.mp4
