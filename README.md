@@ -1,9 +1,13 @@
 # various useful stuff for FPV
 
 
-### DVR video Upscaling
+### DVR video Upscaling (dvrupscaler)
 
-Because you may want to remove noisy audio, rescale to 1080p your dvr video in order to share it on YouTube or other. This is a "simple" ffmpeg oneliner to achieve that.
+I've build up this ffmpeg one-liner and script to achieve the following things :
+* provide a DVR video file and optionally an MP3 soundtrack 
+* get an upscaled and optimised file for posting on youtube or other social medias (1920x1080 format, h264 mp4 file)
+* note that the video & audio formats are not restricted, you should be able to use whatever you want.
+
 
 ```
 ffmpeg -f lavfi -i anullsrc -i DVR_VIDEO _FILE.mov \
@@ -16,13 +20,21 @@ ffmpeg -f lavfi -i anullsrc -i DVR_VIDEO _FILE.mov \
 the output will be an h264 encoded mp4 and your original 640x480 video will be upscaled to 1920x1080 while respecting the proportions.
 
 
-you can turn this into a simple bash script that takes a video file as input :
+### dvrupscaler shell script
+
+you can turn this into a simple bash script that takes a video file as input or use the provided ```dvrupscaler``` script :
 
 ```
-usage : dvrupscaler -f /path/to/video/dvr/file.mov [-a /path/to/audio/file.mp3] [-v:verbose] [-s:shorten the final output to the shortest input file]
+usage : dvrupscaler 
+	-f dvr_video.mov : specifiy the path to the video file to upscale
+	
+	[-a /path/to/audio/file.mp3] : optional path to an audio file to add to the video (by default the script will output an upscaled video with no sound) 
+	
+	[-v:verbose] : makes ffmpeg verbose
+	
+	[-s:shortest] : use this parameter if the audio file provided is longer than the video file. This will trim the upscaled video to the shortest input file.
 ```
 
-dvrupscaler script :
 
 ```
 #!/bin/bash
