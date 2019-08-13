@@ -13,13 +13,13 @@ ffmpeg -f lavfi -i anullsrc -i DVR_VIDEO _FILE.mov \
 	VIDEO_FILE_upscaled.mp4
 ```
 
-the output will be an h264 encoded mp4 and your original 640x480 video will be upscaled to 1920x1080 while respecting the proportions :)
+the output will be an h264 encoded mp4 and your original 640x480 video will be upscaled to 1920x1080 while respecting the proportions.
 
 
 you can turn this into a simple bash script that takes a fideo file as input :
 
 ```
-usage : dvrupscaler -f /path/to/video/dvr/file.mov
+usage : dvrupscaler -f /path/to/video/dvr/file.mov [-v]
 ```
 
 dvrupscaler script :
@@ -27,17 +27,22 @@ dvrupscaler script :
 ```
 #!/bin/bash
 
-# A POSIX variable
-OPTIND=1         # Reset in case getopts has been used previously in the shell.
+# dvrupscaler - a DVR file upscaling script for social media video adaptation
+# scales video to 1920x1080, converts to h264, nulls the audio track
+# Author : A.Arvinte (ledrone.club) - Aug 2019
+# https://github.com/ledroneclub/tools
 
-# Initialize our own variables:
+OPTIND=1 # Reset in case getopts has been used previously in the shell.
+
+# Initialize our variables
 file=""
 verbose=0
+logparams="-loglevel quiet -stats"
 
 while getopts "h?vf:" opt; do
     case "$opt" in
     h|\?)
-        echo "dvrupscale -f video_file"
+        echo "dvrupscaler -f video_file [-v]"
         exit 0
         ;;
     v)  verbose=1
@@ -47,11 +52,12 @@ while getopts "h?vf:" opt; do
     esac
 done
 
+if [ $verbose -eq 1 ]; then
+    logparams=""
+fi
+
 shift $((OPTIND-1))
-
 [ "${1:-}" = "--" ] && shift
-
-# echo "verbose=$verbose, input_file='$input_file', Leftovers: $@"
 
 file_pwd=$(dirname "${file}")
 file_name_full=$(basename -- "$file")
@@ -59,14 +65,9 @@ file_ext="${file_name_full##*.}"
 file_name="${file_name_full%.*}"
 file_out=$file_pwd/${file_name}_upscaled.mp4
 
-
-#echo $file_pwd $file_name_full $file_name $file_ext
-#echo $file_pwd/${file_name}_upscaled.mp4
-#exit 0
-
 echo "Will encode $file to $file_out"
 
-ffmpeg -loglevel quiet -stats -f lavfi -i anullsrc -i $file \
+ffmpeg $logparams -f lavfi -i anullsrc -i $file \
     -pix_fmt yuv420p -shortest -c:v libx264 -b:v 8M \
     -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1" \
     -c:a aac -map 0:a -map 1:v $file_out
