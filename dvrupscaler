@@ -17,12 +17,14 @@ vfile=""
 afile=""
 verbose=0
 shortest=0
+keepaudio=0
 
 logparams="-loglevel quiet -stats"
 shortparams=""
 audiosource="-f lavfi -i anullsrc"
+map="-map 0:a -map 1:v"
 
-while getopts "h?vf:a:s" opt; do
+while getopts "h?vf:a:s:k" opt; do
     case "$opt" in
     h|\?)
         echo "dvrupscaler -f video_file [–a audio_file] [-v:verbose] [-s:shorten to shortest input file]"
@@ -36,7 +38,9 @@ while getopts "h?vf:a:s" opt; do
     f)  vfile=$OPTARG
         ;;
     s)  shortest=1
-        ;;    
+        ;;
+    k)  keepaudio=1
+        ;;
     esac
 done
 
@@ -47,6 +51,11 @@ fi
 if [ $shortest -eq 1 ] || [ -z $afile ]; then
     shortparams="-shortest"
 fi
+
+if [ $keepaudio -eq 1 ]; then
+    audiosource=""
+    map=""
+fi    
 
 shift $((OPTIND-1))
 [ "${1:-}" = "--" ] && shift
@@ -59,8 +68,7 @@ file_out=$file_pwd/${file_name}_upscaled.mp4
 
 echo "Will encode $vfile to $file_out"
 
-
 ffmpeg $logparams $audiosource -i $vfile \
     -pix_fmt yuv420p -c:v libx264 -b:v 8M \
     -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1" \
-    -c:a aac -map 0:a -map 1:v $shortparams $file_out
+    -c:a aac $map $shortparams $file_out
