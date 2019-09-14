@@ -27,7 +27,7 @@ map="-map 0:a -map 1:v"
 while getopts "h?vf:a:s:k" opt; do
     case "$opt" in
     h|\?)
-        echo "dvrupscaler -f video_file [–a audio_file] [-v:verbose] [-s:shorten to shortest input file]"
+        echo "dvrupscaler -f video_file [–a audio_file] [-v:verbose] [-s:shorten to shortest input file] [-k:keep audio]"
         exit 0
         ;;
     v)  verbose=1
